@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pairing Ledger — A Cocktail Programming Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14110F;
+  --surface:#1D1915;
+  --surface-2:#26211B;
+  --surface-3:#302923;
+  --border:rgba(190,126,74,0.16);
+  --border-strong:rgba(190,126,74,0.38);
+  --copper:#BE7E4A;
+  --amber:#D9A25C;
+  --sage:#8A9A6E;
+  --rose:#B5695A;
+  --text:#EDE6DA;
+  --text-muted:#A69C8C;
+  --text-faint:#6E655A;
+  --font-display:'Fraunces', serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.5;}
+.wrap{max-width:980px;margin:0 auto;padding:28px 18px 80px;}
+
+/* ---- Header ---- */
+header.hero{
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  padding:34px 28px 28px;
+  position:relative;
+  overflow:hidden;
+  margin-bottom:22px;
+}
+header.hero::before{
+  content:"";
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, transparent, var(--copper), var(--amber), var(--copper), transparent);
+}
+.eyebrow{font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--amber);}
+h1{font-family:var(--font-display); font-weight:500; font-size:clamp(28px,4.5vw,42px); margin:8px 0 6px; letter-spacing:-.01em;}
+h1 em{font-style:italic; font-weight:400; color:var(--amber);}
+.sub{color:var(--text-muted); max-width:60ch; font-size:15px;}
+
+.glass-row{display:flex; align-items:center; gap:20px; margin-top:22px; flex-wrap:wrap;}
+.glass-visual{width:96px; height:110px; flex-shrink:0;}
+.glass-visual svg{width:100%; height:100%; display:block;}
+#liquidRect, #liquidWave{transition:transform .8s cubic-bezier(.4,0,.2,1);}
+#garnish{transition:opacity .6s ease;}
+@media (prefers-reduced-motion: no-preference){
+  #liquidWave{animation:waveshift 3.2s ease-in-out infinite;}
+}
+@keyframes waveshift{ 0%{ transform:translateX(0); } 50%{ transform:translateX(-8px); } 100%{ transform:translateX(0); } }
+.glass-label{flex:1; min-width:180px;}
+.glass-pct{font-family:var(--font-mono); font-size:30px; color:var(--amber); font-weight:600; line-height:1.1;}
+.glass-caption{font-size:12.5px; color:var(--text-muted); margin-top:2px; max-width:38ch;}
+.stat-row{display:flex; flex-wrap:wrap; gap:0; margin-top:24px; border-top:1px solid var(--border);}
+.stat{flex:1 1 130px; padding:14px 18px 4px; border-right:1px solid var(--border);}
+.stat:last-child{border-right:none;}
+.stat .n{font-family:var(--font-mono); font-size:24px; color:var(--amber); font-weight:600;}
+.stat .l{font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-top:2px;}
+.stat input{background:none; border:none; color:var(--amber); font-family:var(--font-mono); font-size:14px; width:100%; padding:0;}
+.stat input:focus{outline:none; border-bottom:1px dashed var(--copper);}
+
+/* ---- Tabs (index-card style) ---- */
+nav.tabs{display:flex; gap:4px; overflow-x:auto; margin-bottom:0; padding-bottom:0; scrollbar-width:thin;}
+nav.tabs button{
+  font-family:var(--font-mono); font-size:12px; letter-spacing:.03em;
+  background:var(--surface); color:var(--text-muted); border:1px solid var(--border);
+  border-bottom:none; padding:10px 14px; cursor:pointer; white-space:nowrap;
+  border-radius:3px 3px 0 0; transition:.15s;
+}
+nav.tabs button:hover{color:var(--text);}
+nav.tabs button.active{background:var(--surface-2); color:var(--amber); border-color:var(--border-strong); position:relative; top:1px;}
+section.panel{display:none; background:var(--surface-2); border:1px solid var(--border-strong); padding:26px; }
+section.panel.active{display:block;}
+
+h2{font-family:var(--font-display); font-weight:500; font-size:24px; margin:0 0 4px;}
+.panel-intro{color:var(--text-muted); font-size:14px; margin-bottom:22px; max-width:64ch;}
+
+/* ---- Phase / roadmap ---- */
+.phase{border:1px solid var(--border); margin-bottom:14px; background:var(--surface);}
+.phase-head{display:flex; justify-content:space-between; align-items:baseline; padding:14px 18px; border-bottom:1px solid var(--border); cursor:pointer;}
+.phase-head h3{font-family:var(--font-display); font-size:18px; font-weight:600; margin:0;}
+.phase-head .when{font-family:var(--font-mono); font-size:11px; color:var(--copper); text-transform:uppercase;}
+.phase-body{padding:6px 18px 16px; display:none;}
+.phase.open .phase-body{display:block;}
+.goal-item{display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:1px dashed var(--border);}
+.goal-item:last-child{border-bottom:none;}
+.goal-item input[type=checkbox]{margin-top:3px; accent-color:var(--sage); width:16px; height:16px; flex-shrink:0;}
+.goal-item label{font-size:14px;}
+.goal-item.done label{color:var(--text-faint); text-decoration:line-through;}
+.phase-progress{height:4px; background:var(--surface-3); margin-top:4px;}
+.phase-progress-fill{height:100%; background:var(--sage);}
+
+/* ---- Weekly ---- */
+.week-head{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:18px;}
+.streak{font-family:var(--font-mono); font-size:13px; color:var(--amber); border:1px solid var(--border-strong); padding:6px 12px;}
+.week-list .goal-item label{font-size:15px;}
+.week-list .goal-item .hint{display:block; color:var(--text-faint); font-size:12px; margin-top:2px;}
+
+/* ---- Cards / forms generic ---- */
+.card-form{background:var(--surface); border:1px solid var(--border); padding:18px; margin-bottom:20px;}
+.card-form h3{margin:0 0 12px; font-family:var(--font-display); font-size:16px; font-weight:600; color:var(--amber);}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+@media(max-width:600px){.grid2{grid-template-columns:1fr;}}
+.field{margin-bottom:10px;}
+.field label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-bottom:4px;}
+input[type=text], input[type=date], input[type=number], textarea, select{
+  width:100%; background:var(--surface-3); border:1px solid var(--border); color:var(--text);
+  padding:8px 10px; font-family:var(--font-body); font-size:14px;
+}
+textarea{resize:vertical; min-height:60px;}
+input:focus, textarea:focus, select:focus{outline:none; border-color:var(--copper);}
+button.primary{
+  background:var(--copper); color:#14110F; border:none; padding:9px 18px; font-weight:600;
+  font-size:13px; cursor:pointer; font-family:var(--font-body); letter-spacing:.02em;
+}
+button.primary:hover{background:var(--amber);}
+button.ghost{background:none; border:1px solid var(--border-strong); color:var(--text-muted); padding:6px 12px; font-size:12px; cursor:pointer;}
+button.ghost:hover{color:var(--rose); border-color:var(--rose);}
+.stars{display:flex; gap:3px; font-size:18px; cursor:pointer;}
+.stars span{color:var(--text-faint);}
+.stars span.on{color:var(--amber);}
+
+/* ---- Spec card (signature element) ---- */
+.spec-card{
+  background:var(--surface); border:1px solid var(--border-strong); position:relative;
+  padding:16px 18px; margin-bottom:14px;
+}
+.spec-card::before{content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; background:var(--copper);}
+.spec-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+.spec-name{font-family:var(--font-display); font-size:19px; font-weight:600;}
+.spec-meta{font-family:var(--font-mono); font-size:11px; color:var(--copper); text-transform:uppercase; margin-top:2px;}
+.pairing-note{margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); font-size:13.5px; color:var(--text-muted);}
+.pairing-note b{color:var(--sage); font-weight:600;}
+.badge{display:inline-block; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; padding:2px 7px; border:1px solid var(--border-strong); color:var(--amber); letter-spacing:.05em;}
+.entry-photo{max-width:100%; margin-top:10px; border:1px solid var(--border);}
+.entry-actions{margin-top:10px; display:flex; gap:8px;}
+.empty{color:var(--text-faint); font-style:italic; font-size:13px; padding:20px 0;}
+
+/* ---- Atlas ---- */
+.atlas-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media(max-width:700px){.atlas-grid{grid-template-columns:1fr;}}
+.atlas-card{background:var(--surface); border:1px solid var(--border); padding:16px;}
+.atlas-card h4{font-family:var(--font-display); font-size:16px; margin:0 0 6px; color:var(--amber);}
+.atlas-card p{font-size:13.5px; color:var(--text-muted); margin:0 0 8px;}
+.atlas-card .ex{font-size:12.5px; font-family:var(--font-mono); color:var(--sage); border-top:1px dashed var(--border); padding-top:8px;}
+
+/* ---- Bars list ---- */
+.bar-group{margin-bottom:22px;}
+.bar-group h4{font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--copper); border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:10px;}
+.bar-item{display:flex; gap:10px; padding:10px 0; border-bottom:1px dashed var(--border); align-items:flex-start;}
+.bar-item input{margin-top:4px; accent-color:var(--sage);}
+.bar-item .bname{font-weight:600; font-size:14.5px;}
+.bar-item .bname .neigh{font-weight:400; color:var(--text-faint); font-size:12px;}
+.bar-item .bfocus{font-size:13px; color:var(--text-muted); margin-top:2px;}
+.bar-item.visited .bname{color:var(--sage);}
+.disclaimer{font-size:12px; color:var(--text-faint); border-top:1px solid var(--border); padding-top:12px; margin-top:6px;}
+
+footer{text-align:center; color:var(--text-faint); font-size:12px; margin-top:30px; font-family:var(--font-mono);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Field Manual &amp; Working Journal</div>
+    <h1>The Pairing Ledger<br><em>from idea to programming director</em></h1>
+    <p class="sub">A working roadmap for turning cocktail instincts into a repeatable, food-literate programming practice — built to travel with you into bars, tastings, and program building.</p>
+    <div class="glass-row">
+      <div class="glass-visual" aria-hidden="true">
+        <svg id="glassSvg" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="glassClip">
+              <path d="M20,40 Q20,112 100,134 Q180,112 180,40 Q100,56 20,40 Z"/>
+            </clipPath>
+            <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#D9A25C"/>
+              <stop offset="100%" stop-color="#BE7E4A"/>
+            </linearGradient>
+          </defs>
+          <!-- liquid, clipped to glass interior -->
+          <g clip-path="url(#glassClip)">
+            <rect id="liquidRect" x="10" y="134" width="180" height="0" fill="url(#liquidGrad)"/>
+            <path id="liquidWave" d="M10,134 Q35,129 60,134 T110,134 T160,134 T210,134 V150 H10 Z" fill="url(#liquidGrad)"/>
+          </g>
+          <!-- garnish, shown at 100% -->
+          <circle id="garnish" cx="146" cy="34" r="7" fill="none" stroke="#8A9A6E" stroke-width="2.5" opacity="0"/>
+          <!-- glass outline -->
+          <path d="M20,40 Q20,112 100,134 Q180,112 180,40" fill="none" stroke="var(--copper)" stroke-width="2.5"/>
+          <ellipse cx="100" cy="40" rx="80" ry="14" fill="none" stroke="var(--copper)" stroke-width="2.5"/>
+          <line x1="100" y1="134" x2="100" y2="196" stroke="var(--copper)" stroke-width="4"/>
+          <ellipse cx="100" cy="201" rx="40" ry="7" fill="none" stroke="var(--copper)" stroke-width="2.5"/>
+        </svg>
+      </div>
+      <div class="glass-label">
+        <div class="eyebrow" style="margin-bottom:4px;">Program Progress</div>
+        <div class="glass-pct" id="glassPct">0%</div>
+        <div class="glass-caption" id="glassCaption">0 of 0 roadmap goals complete — fill the glass one checkbox at a time</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <div class="l">Job start date</div>
+        <input type="date" id="startDate">
+      </div>
+      <div class="stat"><div class="n" id="statDays">–</div><div class="l">days out</div></div>
+      <div class="stat"><div class="n" id="statJournal">0</div><div class="l">field entries</div></div>
+      <div class="stat"><div class="n" id="statSpecs">0</div><div class="l">specs logged</div></div>
+      <div class="stat"><div class="n" id="statBars">0/0</div><div class="l">bars researched</div></div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="roadmap" class="active">01 · Roadmap</button>
+    <button data-tab="weekly">02 · This Week</button>
+    <button data-tab="journal">03 · Field Journal</button>
+    <button data-tab="atlas">04 · Flavor Atlas</button>
+    <button data-tab="bars">05 · NYC Research List</button>
+    <button data-tab="mentors">06 · Mentors &amp; Network</button>
+    <button data-tab="recipes">07 · Recipe Bank</button>
+    <button data-tab="culture">08 · Culture &amp; History</button>
+  </nav>
+
+  <!-- ROADMAP -->
+  <section class="panel active" id="panel-roadmap">
+    <h2>The Roadmap</h2>
+    <p class="panel-intro">Four phases from where you stand today to running your own programming practice. Each phase has concrete, checkable deliverables — not vibes. Check items off as you go; your progress is saved automatically.</p>
+    <div id="phaseList"></div>
+  </section>
+
+  <!-- WEEKLY -->
+  <section class="panel" id="panel-weekly">
+    <h2>This Week's Practice</h2>
+    <p class="panel-intro">The same five moves, every week, from now through the job and beyond. This is the engine that turns "ideas in my head" into a documented, defensible body of work.</p>
+    <div class="week-head">
+      <div style="font-family:var(--font-mono); font-size:12px; color:var(--text-muted);">Week of <span id="weekLabel"></span></div>
+      <div class="streak">🔥 <span id="streakCount">0</span>-week streak</div>
+    </div>
+    <div class="week-list" id="weekList"></div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="panel" id="panel-journal">
+    <h2>Field Journal</h2>
+    <p class="panel-intro">Log every bar visit here. Two cocktails minimum per stop, with what you'd pair each one with and why. This becomes both your training log and your future portfolio — and your camera roll doubles as documentation.</p>
+
+    <div class="card-form">
+      <h3>New entry</h3>
+      <div class="grid2">
+        <div class="field"><label>Bar / venue</label><input type="text" id="jBar" placeholder="e.g. Katana Kitten"></div>
+        <div class="field"><label>Date</label><input type="date" id="jDate"></div>
+      </div>
+      <div class="field"><label>Cocktail</label><input type="text" id="jCocktail" placeholder="What did you drink?"></div>
+      <div class="grid2">
+        <div class="field"><label>What's in it (as best you can tell)</label><textarea id="jBuild" placeholder="Base spirit, modifiers, garnish, technique"></textarea></div>
+        <div class="field"><label>Pairing hypothesis — what food would this go with, and why?</label><textarea id="jPairing" placeholder="e.g. fatty/rich dish + high acid to cut, or shared botanical/spice bridge"></textarea></div>
+      </div>
+      <div class="field"><label>Rating</label><div class="stars" id="jStars">★★★★★</div></div>
+      <div class="field"><label>Photo (menu, drink, or bar bite — optional)</label><input type="file" accept="image/*" capture="environment" id="jPhoto"></div>
+      <button class="primary" onclick="addJournalEntry()">Save entry</button>
+    </div>
+
+    <div id="journalList"></div>
+  </section>
+
+  <!-- ATLAS -->
+  <section class="panel" id="panel-atlas">
+    <h2>Flavor &amp; Pairing Atlas</h2>
+    <p class="panel-intro">The frameworks that separate "I like this drink" from "I can design a program." Start with these; then add your own discoveries below as you research regional flavor stories.</p>
+    <div class="atlas-grid" id="atlasCore"></div>
+
+    <div class="card-form" style="margin-top:24px;">
+      <h3>Add your own pairing principle or flavor story</h3>
+      <div class="field"><label>Principle / region / story</label><input type="text" id="aTitle" placeholder="e.g. Sherry-cask whisky ↔ jamón &amp; Spanish tapas"></div>
+      <div class="field"><label>Why it works</label><textarea id="aDesc"></textarea></div>
+      <div class="field"><label>Example pairing</label><input type="text" id="aEx" placeholder="e.g. Nutty, oxidative amontillado sherry + salty cured pork = shared umami bridge"></div>
+      <button class="primary" onclick="addAtlasEntry()">Add to atlas</button>
+    </div>
+    <div id="atlasCustom"></div>
+  </section>
+
+  <!-- BARS -->
+  <section class="panel" id="panel-bars">
+    <h2>NYC Field Research List</h2>
+    <p class="panel-intro">A working list, grouped by what you're there to study — not just where to drink. Check each off as you go; note your pairing hypothesis for that visit in the Field Journal. Bar programs turn over fast — confirm hours/menu before you go.</p>
+    <div id="barGroups"></div>
+    <p class="disclaimer">List current as of research in August 2026. Treat it as a starting map, not gospel — swap in whatever's opening or trending by the time you get there, using the same "what am I here to learn" grouping.</p>
+  </section>
+
+  <!-- MENTORS -->
+  <section class="panel" id="panel-mentors">
+    <h2>Mentors &amp; Network</h2>
+    <p class="panel-intro">You already flagged a mentor as a priority — treat it like a project, not a wish. Track who you're pursuing, where they'd be reachable (industry events, guild chapters, their own bar), and what you're asking for.</p>
+    <div class="card-form">
+      <h3>Add a contact / target mentor</h3>
+      <div class="grid2">
+        <div class="field"><label>Name / role</label><input type="text" id="mName" placeholder="e.g. Bar director at [venue]"></div>
+        <div class="field"><label>Status</label>
+          <select id="mStatus">
+            <option>Researching</option>
+            <option>Reached out</option>
+            <option>Meeting scheduled</option>
+            <option>Ongoing relationship</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Where to reach / connect</label><input type="text" id="mWhere" placeholder="Their bar, a guild event, mutual contact, Instagram, etc."></div>
+      <div class="field"><label>What you're asking for / notes</label><textarea id="mNotes" placeholder="Be specific: a 30-min conversation about menu development? shadowing a shift? feedback on your pairing philosophy doc?"></textarea></div>
+      <button class="primary" onclick="addMentor()">Save contact</button>
+    </div>
+    <div id="mentorList"></div>
+  </section>
+
+  <!-- RECIPES -->
+  <section class="panel" id="panel-recipes">
+    <h2>Recipe Bank</h2>
+    <p class="panel-intro">Get everything out of your head and onto a spec card — a recipe that only lives in your memory isn't a program yet. This is also your capstone portfolio in progress.</p>
+    <div class="card-form">
+      <h3>New spec</h3>
+      <div class="grid2">
+        <div class="field"><label>Name</label><input type="text" id="rName"></div>
+        <div class="field"><label>Base spirit / glass</label><input type="text" id="rBase" placeholder="e.g. Rye · Coupe"></div>
+      </div>
+      <div class="field"><label>Build / spec</label><textarea id="rBuild" placeholder="2oz rye, .75oz ..., stir, garnish"></textarea></div>
+      <div class="field"><label>Intended food pairing + reasoning</label><textarea id="rPairing"></textarea></div>
+      <div class="field"><label>Status</label>
+        <select id="rStatus"><option>Concept</option><option>Tested</option><option>Menu-ready</option></select>
+      </div>
+      <button class="primary" onclick="addRecipe()">Save spec</button>
+    </div>
+    <div id="recipeList"></div>
+  </section>
+
+  <!-- CULTURE & HISTORY -->
+  <section class="panel" id="panel-culture">
+    <h2>Culture &amp; History — Latin America &amp; the Caribbean</h2>
+    <p class="panel-intro">This is the specialty layer — the difference between borrowing a flavor and actually knowing where it came from. Each region below pairs a real history with the food logic that grows out of it. Use this to program with authority, not just a garnish.</p>
+    <div class="atlas-grid" id="cultureCore"></div>
+
+    <div class="card-form" style="margin-top:24px;">
+      <h3>Add your own regional research</h3>
+      <div class="field"><label>Region / spirit / tradition</label><input type="text" id="cTitle" placeholder="e.g. Dominican mamajuana, or Colombian aguardiente"></div>
+      <div class="field"><label>History / origin story</label><textarea id="cHistory"></textarea></div>
+      <div class="field"><label>Pairing logic — what food it grew up next to, and why it works</label><textarea id="cPairing"></textarea></div>
+      <button class="primary" onclick="addCultureEntry()">Add to Culture &amp; History</button>
+    </div>
+    <div id="cultureCustom"></div>
+  </section>
+
+  <footer>saved privately to this browser via localStorage · nothing here is shared or uploaded</footer>
+</div>
+
+<script>
+/* ---------------- storage helpers ---------------- */
+/* Standalone build: uses the browser's own localStorage instead of the
+   Claude artifact storage API, so this file saves data when hosted on
+   any static site (GitHub Pages, Netlify, your own domain, or opened
+   directly from disk). Data is per-browser, per-device — there is no
+   cross-device sync without adding a real backend. */
+const STORAGE_PREFIX = 'pairing-ledger:';
+async function getKey(key, fallback){
+  try{
+    const raw = localStorage.getItem(STORAGE_PREFIX+key);
+    return raw !== null ? JSON.parse(raw) : fallback;
+  }catch(e){ console.error('storage read error', e); return fallback; }
+}
+async function setKey(key, value){
+  try{ localStorage.setItem(STORAGE_PREFIX+key, JSON.stringify(value)); }
+  catch(e){ console.error('storage write error — your browser storage may be full or disabled', e); }
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function isoWeek(d){
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+  return date.getUTCFullYear()+'-W'+String(weekNo).padStart(2,'0');
+}
+
+/* ---------------- tabs ---------------- */
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+});
+
+/* ---------------- header stats / start date ---------------- */
+async function initHeader(){
+  let start = await getKey('start-date', null);
+  const input = document.getElementById('startDate');
+  if(start) input.value = start;
+  input.addEventListener('change', async ()=>{
+    await setKey('start-date', input.value);
+    updateDays(input.value);
+  });
+  updateDays(start);
+}
+function updateDays(start){
+  const el = document.getElementById('statDays');
+  if(!start){ el.textContent='–'; return; }
+  const diff = Math.ceil((new Date(start) - new Date(new Date().toDateString()))/86400000);
+  el.textContent = diff>=0 ? diff : ('+'+Math.abs(diff));
+}
+
+/* ---------------- ROADMAP ---------------- */
+const PHASES = [
+  { id:'p1', when:'Now → ~3 weeks out', title:'Foundation Sprint', goals:[
+    'Read The Flavor Bible and What to Drink with What You Eat — pull 20 pairing principles into your Flavor Atlas',
+    'Read Cocktail Codex and sort your existing ideas into its root families (Old Fashioned, Martini, Daiquiri, Sidecar, Whiskey Highball, Flip)',
+    'Get every cocktail currently only "in your head" onto a written spec card — 15 minimum',
+    'Complete 4 structured bar visits from the NYC Research List, 2 drinks logged each with a pairing hypothesis',
+    'Identify and message 3 potential mentors',
+    'Draft a one-page "pairing philosophy" — how you personally approach matching drinks to food'
+  ]},
+  { id:'p2', when:'Final weeks before the job starts', title:'Applied Practice &amp; Portfolio', goals:[
+    'Design one full 4-course tasting menu with a paired cocktail for each course — your capstone piece',
+    'Get one working trail shift, staff tasting, or informal session with a bar or kitchen to pressure-test a pairing on real guests',
+    'Land a first real mentor conversation — bring the pairing philosophy doc for feedback',
+    'Visit 3 more research bars, focused specifically on food-forward programs',
+    'Grow the Recipe Bank to at least 25 documented specs with pairing notes'
+  ]},
+  { id:'p3', when:'First 90 days on the job', title:'On the Job', goals:[
+    'Ship your first live pairing menu or cocktail program',
+    'Log a weekly reflection: what landed with guests, what the kitchen pushed back on, what you\'d change',
+    'Monthly mentor check-in',
+    'Document 10 specific "field wins" — a pairing that landed, and the reasoning behind it'
+  ]},
+  { id:'p4', when:'Month 4 onward', title:'Building the Consulting Practice', goals:[
+    'Turn 3 of your best programs into public case studies (menu + rationale + result)',
+    'Define your service offerings — menu consulting, staff training, launch events, seasonal refreshes',
+    'Join an industry community (USBG chapter, local guild, tasting group)',
+    'Pursue one adjacent certification (Cicerone, WSET, or an advanced spirits cert) to deepen cross-category pairing fluency',
+    'Land your first outside consulting conversation'
+  ]}
+];
+
+async function renderPhases(){
+  const checks = await getKey('phase-checks', {});
+  const totalGoals = PHASES.reduce((n,ph)=>n+ph.goals.length,0);
+  const doneGoals = PHASES.reduce((n,ph)=>n+ph.goals.filter((g,gi)=>checks[ph.id+'-'+gi]).length,0);
+  updateGlass(doneGoals, totalGoals);
+  const wrap = document.getElementById('phaseList');
+  wrap.innerHTML = PHASES.map((ph,pi)=>{
+    const done = ph.goals.filter((g,gi)=>checks[ph.id+'-'+gi]).length;
+    const pct = Math.round(done/ph.goals.length*100);
+    return `<div class="phase ${pi===0?'open':''}" id="phase-${ph.id}">
+      <div class="phase-head" onclick="togglePhase('${ph.id}')">
+        <h3>${String(pi+1).padStart(2,'0')} — ${ph.title}</h3>
+        <div class="when">${ph.when} · ${done}/${ph.goals.length}</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-progress"><div class="phase-progress-fill" style="width:${pct}%"></div></div>
+        ${ph.goals.map((g,gi)=>{
+          const key = ph.id+'-'+gi;
+          return `<div class="goal-item ${checks[key]?'done':''}">
+            <input type="checkbox" ${checks[key]?'checked':''} onchange="toggleGoal('${key}', this.checked)">
+            <label>${g}</label>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function togglePhase(id){ document.getElementById('phase-'+id).classList.toggle('open'); }
+async function toggleGoal(key, val){
+  const checks = await getKey('phase-checks', {});
+  checks[key] = val;
+  await setKey('phase-checks', checks);
+  renderPhases();
+}
+
+/* ---------------- PROGRESS GLASS ---------------- */
+function updateGlass(done, total){
+  const pct = total ? Math.round(done/total*100) : 0;
+  const maxH = 94; // full liquid height inside the bowl
+  const h = maxH * (pct/100);
+  const topY = 134 - h;
+  const rect = document.getElementById('liquidRect');
+  const wave = document.getElementById('liquidWave');
+  rect.setAttribute('y', topY);
+  rect.setAttribute('height', h);
+  wave.setAttribute('d', `M10,${topY} Q35,${topY-5} 60,${topY} T110,${topY} T160,${topY} T210,${topY} V150 H10 Z`);
+  document.getElementById('garnish').style.opacity = pct>=100 ? 1 : 0;
+  document.getElementById('glassPct').textContent = pct+'%';
+  document.getElementById('glassCaption').textContent = `${done} of ${total} roadmap goals complete — fill the glass one checkbox at a time`;
+}
+
+/* ---------------- WEEKLY ---------------- */
+const WEEKLY_ITEMS = [
+  {k:'visit', label:'One structured bar visit logged', hint:'Minimum 2 cocktails, each with a written pairing hypothesis'},
+  {k:'study', label:'One pairing study on paper', hint:'Pick a dish, design the cocktail before you taste anything'},
+  {k:'research', label:'One hour of research logged', hint:'A book chapter, article, or video — note the takeaway in your journal'},
+  {k:'atlas', label:'One new entry added to the Flavor Atlas', hint:'A principle, region, or bridge ingredient you discovered'},
+  {k:'network', label:'One mentor / network touchpoint', hint:'A message, an event, a follow-up — keep the thread moving'}
+];
+async function renderWeekly(){
+  const wk = isoWeek(new Date());
+  document.getElementById('weekLabel').textContent = wk;
+  const state = await getKey('week-'+wk, {});
+  const list = document.getElementById('weekList');
+  list.innerHTML = WEEKLY_ITEMS.map(item=>`
+    <div class="goal-item ${state[item.k]?'done':''}">
+      <input type="checkbox" ${state[item.k]?'checked':''} onchange="toggleWeekItem('${item.k}', this.checked)">
+      <label>${item.label}<span class="hint">${item.hint}</span></label>
+    </div>`).join('');
+  computeStreak();
+}
+async function toggleWeekItem(k, val){
+  const wk = isoWeek(new Date());
+  const state = await getKey('week-'+wk, {});
+  state[k] = val;
+  await setKey('week-'+wk, state);
+  renderWeekly();
+}
+async function computeStreak(){
+  let streak = 0;
+  let d = new Date();
+  for(let i=0;i<52;i++){
+    const wk = isoWeek(d);
+    const state = await getKey('week-'+wk, null);
+    if(state && WEEKLY_ITEMS.every(it=>state[it.k])){ streak++; d.setDate(d.getDate()-7); }
+    else break;
+  }
+  document.getElementById('streakCount').textContent = streak;
+}
+
+/* ---------------- JOURNAL ---------------- */
+let jRating = 0;
+document.getElementById('jStars').addEventListener('click', e=>{
+  // simple 5-star click based on position
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX-rect.left)/rect.width;
+  jRating = Math.max(1, Math.ceil(pct*5));
+  renderStarInput();
+});
+function renderStarInput(){
+  document.getElementById('jStars').innerHTML = [1,2,3,4,5].map(i=>`<span class="${i<=jRating?'on':''}">★</span>`).join('');
+}
+renderStarInput();
+
+function resizeImage(file, maxW){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const scale = Math.min(1, maxW/img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width*scale; canvas.height = img.height*scale;
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addJournalEntry(){
+  const bar = document.getElementById('jBar').value.trim();
+  const cocktail = document.getElementById('jCocktail').value.trim();
+  if(!bar || !cocktail){ alert('Add at least a venue and a cocktail name.'); return; }
+  const photoFile = document.getElementById('jPhoto').files[0];
+  let photo = null;
+  if(photoFile){
+    try{ photo = await resizeImage(photoFile, 700); }catch(e){ console.error(e); }
+  }
+  const entry = {
+    id:uid(),
+    bar, cocktail,
+    date: document.getElementById('jDate').value || new Date().toISOString().slice(0,10),
+    build: document.getElementById('jBuild').value.trim(),
+    pairing: document.getElementById('jPairing').value.trim(),
+    rating: jRating,
+    photo
+  };
+  const list = await getKey('journal-entries', []);
+  list.unshift(entry);
+  await setKey('journal-entries', list);
+  ['jBar','jCocktail','jBuild','jPairing'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('jPhoto').value='';
+  jRating = 0; renderStarInput();
+  renderJournal(); updateHeaderStats();
+}
+async function deleteJournal(id){
+  let list = await getKey('journal-entries', []);
+  list = list.filter(e=>e.id!==id);
+  await setKey('journal-entries', list);
+  renderJournal(); updateHeaderStats();
+}
+async function renderJournal(){
+  const list = await getKey('journal-entries', []);
+  const wrap = document.getElementById('journalList');
+  if(!list.length){ wrap.innerHTML = '<div class="empty">No entries yet — your first bar visit starts the log.</div>'; return; }
+  wrap.innerHTML = list.map(e=>`
+    <div class="spec-card">
+      <div class="spec-top">
+        <div>
+          <div class="spec-name">${e.cocktail}</div>
+          <div class="spec-meta">${e.bar} · ${e.date}</div>
+        </div>
+        <div>${'★'.repeat(e.rating)}${'☆'.repeat(5-e.rating)}</div>
+      </div>
+      ${e.build?`<div style="margin-top:8px; font-size:13.5px; color:var(--text-muted);">${e.build}</div>`:''}
+      ${e.pairing?`<div class="pairing-note"><b>Pairing hypothesis:</b> ${e.pairing}</div>`:''}
+      ${e.photo?`<img class="entry-photo" src="${e.photo}">`:''}
+      <div class="entry-actions"><button class="ghost" onclick="deleteJournal('${e.id}')">Remove</button></div>
+    </div>`).join('');
+}
+
+/* ---------------- ATLAS ---------------- */
+const ATLAS_CORE = [
+  {t:'Complement, contrast, or bridge', d:'Every pairing does one of three things: echoes a shared flavor (complement), sets up a deliberate opposite (contrast), or connects two otherwise unrelated things through one shared ingredient or compound (bridge). Decide which effect you\'re going for before you build the drink.', ex:'Bridge: cardamom in a dish + cardamom bitters in the drink'},
+  {t:'Balance like a sauce', d:'Treat the cocktail as another element on the plate: weigh its acid, sweetness, bitterness, salt, and fat against what\'s being eaten. A rich, fatty dish usually needs a drink with real acid or bitterness to reset the palate for the next bite.', ex:'Fried food + high-acid citrus cocktail = classic cut-through'},
+  {t:'Match the weight', d:'Light, delicate food gets overwhelmed by a big, boozy, syrupy drink; a rich braise will make a thin, watery cocktail taste like nothing. Match intensity and body first, flavor detail second.', ex:'Raw oysters + a crisp, low-ABV highball, not a stirred spirit-forward drink'},
+  {t:'Use temperature and texture', d:'Carbonation and cold both reset the palate between bites — useful with rich, spicy, or oily food. Texture contrast (a silky drink against a crunchy bite) can be as effective as flavor contrast.', ex:'Spicy food + a chilled, effervescent, lower-ABV pour to manage heat without adding more alcohol burn'},
+  {t:'Handle bitterness and tannin on purpose', d:'Amari, hop-forward builds, and tea infusions behave like tannin in wine — they cut fat and reset richness. Used well, bitterness is a tool, not a flaw to hide.', ex:'Fatty charcuterie + an amaro-based cocktail, the same logic as a tannic red wine'},
+  {t:'Follow the geography', d:'Spirits and cuisines that evolved in the same region usually already agree — agave spirits with citrus-and-chile Mexican cooking, shochu or sake bases with umami-forward Japanese small plates, genever and juniper with North Sea seafood and butter, rum with Caribbean spice and tropical fruit, sherry-cask whisky with Spanish jamón and olives.', ex:'Start any new pairing by asking what grew, was fished, or was cooked near where the spirit comes from'}
+];
+function renderAtlasCore(){
+  document.getElementById('atlasCore').innerHTML = ATLAS_CORE.map(a=>`
+    <div class="atlas-card"><h4>${a.t}</h4><p>${a.d}</p><div class="ex">${a.ex}</div></div>`).join('');
+}
+async function addAtlasEntry(){
+  const t = document.getElementById('aTitle').value.trim();
+  if(!t){ alert('Give it a title.'); return; }
+  const entry = { id:uid(), t, d:document.getElementById('aDesc').value.trim(), ex:document.getElementById('aEx').value.trim() };
+  const list = await getKey('atlas-custom', []);
+  list.unshift(entry);
+  await setKey('atlas-custom', list);
+  ['aTitle','aDesc','aEx'].forEach(id=>document.getElementById(id).value='');
+  renderAtlasCustom();
+}
+async function deleteAtlas(id){
+  let list = await getKey('atlas-custom', []);
+  list = list.filter(e=>e.id!==id);
+  await setKey('atlas-custom', list);
+  renderAtlasCustom();
+}
+async function renderAtlasCustom(){
+  const list = await getKey('atlas-custom', []);
+  const wrap = document.getElementById('atlasCustom');
+  if(!list.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = '<h3 style="font-family:var(--font-display); font-weight:600; color:var(--amber); margin:22px 0 10px;">Your discoveries</h3><div class="atlas-grid">' +
+    list.map(a=>`<div class="atlas-card"><h4>${a.t}</h4><p>${a.d}</p>${a.ex?`<div class="ex">${a.ex}</div>`:''}<div class="entry-actions"><button class="ghost" onclick="deleteAtlas('${a.id}')">Remove</button></div></div>`).join('') + '</div>';
+}
+
+/* ---------------- CULTURE & HISTORY ---------------- */
+const CULTURE_REGIONS = [
+  {r:'Cuba', t:'The Daiquiri &amp; Mojito Lineage', d:'The daiquiri is said to trace to American mining engineers near Santiago de Cuba around 1900, who softened raw local rum with the island\'s limes and sugar — later refined into an entire program at Havana\'s La Floridita. The mojito\'s mint-and-rum tradition runs even older, tangled up with El Draque, a rough 16th-century sailor\'s mix of aguardiente, lime, and mint.', ex:'Both drinks share Cuban criollo cooking\'s own citrus backbone — mojo-marinated pork, ropa vieja, black beans and rice.'},
+  {r:'Mexico', t:'Agave Country', d:'Tequila and mezcal both start with agave but diverge by geography: tequila is tied to blue Weber agave around Jalisco\'s volcanic soil; mezcal covers a wider family of agave species across Oaxaca, traditionally roasted in earthen pits before distillation — which is where the smoke comes from, not a stylistic choice. Sotol (Chihuahua, from a desert spoon plant) and raicilla (Jalisco\'s coast) are regional cousins.', ex:'Mezcal\'s pit-smoke echoes barbacoa and mole\'s own slow-smoked cooking. Tequila\'s brighter profile suits ceviche or the pineapple-pork sweetness of tacos al pastor.'},
+  {r:'Peru &amp; Chile', t:'Pisco and the Edible Cousin', d:'Pisco descends from Spanish colonial grape brandy distilled in coastal port towns from the 1500s onward; Peru and Chile both claim it, and the dispute is part of the region\'s identity. The pisco sour was popularized in early-20th-century Lima bars catering to American expats.', ex:'Peruvian ceviche\'s leche de tigre marinade is built on the same acid backbone as a pisco sour — one of the rare pairings that doubles down on shared acidity instead of contrasting it.'},
+  {r:'Brazil', t:'Cachaça and the Churrasco Table', d:'Cachaça is distilled straight from fresh-pressed sugarcane juice rather than molasses, which is what separates it from rum. Small-batch alambique producers have kept regional styles alive since Brazil\'s colonial sugar economy, long before the caipirinha became its global ambassador.', ex:'Muddled lime and raw cane funk cut through churrasco\'s fatty grilled meats, with farofa\'s toasted-cassava crunch adding texture on the plate.'},
+  {r:'Trinidad &amp; the Anglophone Caribbean', t:'Bitters, Spice, and Rum Punch', d:'Angostura bitters were developed in the 1820s by a doctor treating soldiers in Venezuela before the company relocated to Trinidad. Rum punch follows an old rhyme traceable across the English-speaking islands — "one of sour, two of sweet, three of strong, four of weak" — a practical formula from before recipes were written down.', ex:'The region\'s warm-spice pantry — nutmeg, allspice, clove — shows up in both the punch and the food: doubles, roti, jerk. Drink and dish are often drawing from the same rack.'},
+  {r:'Invented Tradition', t:'Tiki — A Borrowed Identity Worth Knowing', d:'Tiki was invented in 1930s–40s America, not the Pacific or the Caribbean — bartenders like Don the Beachcomber and Trader Vic built a Polynesian-styled fantasy while leaning almost entirely on Caribbean rum for the liquid itself.', ex:'Know the gap between the invented aesthetic and the real regional history behind the spirit — it\'s the difference between borrowing a flavor and borrowing a costume, and it matters when you\'re designing someone else\'s cultural experience.'}
+];
+function renderCultureCore(){
+  document.getElementById('cultureCore').innerHTML = CULTURE_REGIONS.map(c=>`
+    <div class="atlas-card"><span class="badge" style="margin-bottom:8px; display:inline-block;">${c.r}</span><h4>${c.t}</h4><p>${c.d}</p><div class="ex">${c.ex}</div></div>`).join('');
+}
+async function addCultureEntry(){
+  const t = document.getElementById('cTitle').value.trim();
+  if(!t){ alert('Give it a title.'); return; }
+  const entry = { id:uid(), t, d:document.getElementById('cHistory').value.trim(), ex:document.getElementById('cPairing').value.trim() };
+  const list = await getKey('culture-custom', []);
+  list.unshift(entry);
+  await setKey('culture-custom', list);
+  ['cTitle','cHistory','cPairing'].forEach(id=>document.getElementById(id).value='');
+  renderCultureCustom();
+}
+async function deleteCulture(id){
+  let list = await getKey('culture-custom', []);
+  list = list.filter(e=>e.id!==id);
+  await setKey('culture-custom', list);
+  renderCultureCustom();
+}
+async function renderCultureCustom(){
+  const list = await getKey('culture-custom', []);
+  const wrap = document.getElementById('cultureCustom');
+  if(!list.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = '<h3 style="font-family:var(--font-display); font-weight:600; color:var(--amber); margin:22px 0 10px;">Your regional research</h3><div class="atlas-grid">' +
+    list.map(c=>`<div class="atlas-card"><h4>${c.t}</h4><p>${c.d}</p>${c.ex?`<div class="ex">${c.ex}</div>`:''}<div class="entry-actions"><button class="ghost" onclick="deleteCulture('${c.id}')">Remove</button></div></div>`).join('') + '</div>';
+}
+
+/* ---------------- BARS ---------------- */
+const BAR_GROUPS = [
+  { title:'Technique & hospitality foundation', bars:[
+    {n:'Attaboy', neigh:'Lower East Side', focus:'No menu — study how they build a drink from a few spoken words. Watch the verbal ordering and improvisation.'},
+    {n:'Employees Only', neigh:'West Village', focus:'Old-school hospitality-forward program running deep into the night, with a real food menu alongside it.'},
+    {n:'The Dead Rabbit', neigh:'Financial District', focus:'Irish whiskey-driven, punch service, heavy narrative and history built into the menu — study story-driven programming.'}
+  ]},
+  { title:'Food-forward / pairing-specific programs', bars:[
+    {n:'Katana Kitten', neigh:'Greenwich Village', focus:'Japanese-inspired cocktails built specifically to pair with skewers and small plates — order the Mortadella Katsu Sando alongside a highball.'},
+    {n:'The Winslow', neigh:'East Village', focus:'Runs themed, multi-course cocktail-and-food pairing dinners — study how a full menu gets built course by course.'},
+    {n:'Leyenda', neigh:'Brooklyn', focus:'Mexican-spirits-driven menu built alongside a serious food program — study regional spirit-to-cuisine cohesion.'},
+    {n:'Bar Snack', neigh:'East Village', focus:'The menu structure itself is built around drink-and-bite combos — study pairing as the organizing principle, not an afterthought.'},
+    {n:'shmuck', neigh:'Lower East Side', focus:'Cocktails directly inspired by specific dishes — study the process of translating a dish into a drink.'}
+  ]},
+  { title:'Global spirit & regional story research', bars:[
+    {n:'Titán', neigh:'Dumbo', focus:'Mexican bar and restaurant from Ivy Mix — regional spirit storytelling done as a full concept.'},
+    {n:'Sunken Harbor Club', neigh:'Brooklyn (above Gage & Tollner)', focus:'Tiki done seriously — study tropical spice, rum, and fruit pairing logic.'},
+    {n:'Cocktail Omakase / Bar 7', neigh:'Various', focus:'Japanese izakaya-style drink-and-bite omakase — a true tasting-menu format for cocktails, one drink and one bite at a time.'}
+  ]},
+  { title:'Fine-dining pairing literacy (non-cocktail, but essential)', bars:[
+    {n:'Gramercy Tavern / Union Square Cafe', neigh:'Flatiron / Union Square', focus:'Benchmark for structured beverage-and-food pairing philosophy in NY fine dining — study the service logic, not just the drink.'},
+    {n:'Dhamaka', neigh:'Lower East Side', focus:'High-spice Indian cuisine — a good test bed for how sweetness, dairy, and acid manage heat, and how a drink could do the same job.'}
+  ]}
+];
+async function renderBars(){
+  const visited = await getKey('bars-visited', {});
+  const wrap = document.getElementById('barGroups');
+  wrap.innerHTML = BAR_GROUPS.map(g=>`
+    <div class="bar-group">
+      <h4>${g.title}</h4>
+      ${g.bars.map(b=>{
+        const key = g.title+'|'+b.n;
+        const v = !!visited[key];
+        return `<div class="bar-item ${v?'visited':''}">
+          <input type="checkbox" ${v?'checked':''} onchange="toggleBar('${key.replace(/'/g,"\\'")}', this.checked)">
+          <div>
+            <div class="bname">${b.n} <span class="neigh">— ${b.neigh}</span></div>
+            <div class="bfocus">${b.focus}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+async function toggleBar(key, val){
+  const visited = await getKey('bars-visited', {});
+  visited[key] = val;
+  await setKey('bars-visited', visited);
+  renderBars(); updateHeaderStats();
+}
+
+/* ---------------- MENTORS ---------------- */
+async function addMentor(){
+  const name = document.getElementById('mName').value.trim();
+  if(!name){ alert('Add a name or role.'); return; }
+  const entry = {
+    id:uid(), name,
+    status: document.getElementById('mStatus').value,
+    where: document.getElementById('mWhere').value.trim(),
+    notes: document.getElementById('mNotes').value.trim()
+  };
+  const list = await getKey('mentor-list', []);
+  list.unshift(entry);
+  await setKey('mentor-list', list);
+  ['mName','mWhere','mNotes'].forEach(id=>document.getElementById(id).value='');
+  renderMentors();
+}
+async function deleteMentor(id){
+  let list = await getKey('mentor-list', []);
+  list = list.filter(e=>e.id!==id);
+  await setKey('mentor-list', list);
+  renderMentors();
+}
+async function renderMentors(){
+  const list = await getKey('mentor-list', []);
+  const wrap = document.getElementById('mentorList');
+  if(!list.length){ wrap.innerHTML = '<div class="empty">No contacts logged yet — add the first name you have in mind.</div>'; return; }
+  wrap.innerHTML = list.map(e=>`
+    <div class="spec-card">
+      <div class="spec-top">
+        <div><div class="spec-name">${e.name}</div><div class="spec-meta">${e.where||'—'}</div></div>
+        <span class="badge">${e.status}</span>
+      </div>
+      ${e.notes?`<div class="pairing-note">${e.notes}</div>`:''}
+      <div class="entry-actions"><button class="ghost" onclick="deleteMentor('${e.id}')">Remove</button></div>
+    </div>`).join('');
+}
+
+/* ---------------- RECIPES ---------------- */
+async function addRecipe(){
+  const name = document.getElementById('rName').value.trim();
+  if(!name){ alert('Give the drink a name.'); return; }
+  const entry = {
+    id:uid(), name,
+    base: document.getElementById('rBase').value.trim(),
+    build: document.getElementById('rBuild').value.trim(),
+    pairing: document.getElementById('rPairing').value.trim(),
+    status: document.getElementById('rStatus').value
+  };
+  const list = await getKey('recipe-list', []);
+  list.unshift(entry);
+  await setKey('recipe-list', list);
+  ['rName','rBase','rBuild','rPairing'].forEach(id=>document.getElementById(id).value='');
+  renderRecipes(); updateHeaderStats();
+}
+async function deleteRecipe(id){
+  let list = await getKey('recipe-list', []);
+  list = list.filter(e=>e.id!==id);
+  await setKey('recipe-list', list);
+  renderRecipes(); updateHeaderStats();
+}
+async function renderRecipes(){
+  const list = await getKey('recipe-list', []);
+  const wrap = document.getElementById('recipeList');
+  if(!list.length){ wrap.innerHTML = '<div class="empty">No specs yet — start emptying your head onto cards.</div>'; return; }
+  wrap.innerHTML = list.map(e=>`
+    <div class="spec-card">
+      <div class="spec-top">
+        <div><div class="spec-name">${e.name}</div><div class="spec-meta">${e.base||'—'}</div></div>
+        <span class="badge">${e.status}</span>
+      </div>
+      ${e.build?`<div style="margin-top:8px; font-size:13.5px; color:var(--text-muted); font-family:var(--font-mono);">${e.build}</div>`:''}
+      ${e.pairing?`<div class="pairing-note"><b>Pairs with:</b> ${e.pairing}</div>`:''}
+      <div class="entry-actions"><button class="ghost" onclick="deleteRecipe('${e.id}')">Remove</button></div>
+    </div>`).join('');
+}
+
+/* ---------------- header stats aggregate ---------------- */
+async function updateHeaderStats(){
+  const journal = await getKey('journal-entries', []);
+  const recipes = await getKey('recipe-list', []);
+  const visited = await getKey('bars-visited', {});
+  const totalBars = BAR_GROUPS.reduce((n,g)=>n+g.bars.length,0);
+  const visitedCount = Object.values(visited).filter(Boolean).length;
+  document.getElementById('statJournal').textContent = journal.length;
+  document.getElementById('statSpecs').textContent = recipes.length;
+  document.getElementById('statBars').textContent = visitedCount+'/'+totalBars;
+}
+
+/* ---------------- init ---------------- */
+(async function init(){
+  await initHeader();
+  renderPhases();
+  renderWeekly();
+  renderJournal();
+  renderAtlasCore();
+  renderAtlasCustom();
+  renderCultureCore();
+  renderCultureCustom();
+  renderBars();
+  renderMentors();
+  renderRecipes();
+  updateHeaderStats();
+})();
+</script>
+</body>
+</html>
