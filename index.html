@@ -154,6 +154,14 @@ button.ghost:hover{color:var(--rose); border-color:var(--rose);}
 .atlas-card .ex{font-size:12.5px; font-family:var(--font-mono); color:var(--sage); border-top:1px dashed var(--border); padding-top:8px;}
 
 /* ---- Bars list ---- */
+.ref-group{margin-bottom:20px;}
+.ref-group h4{font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--copper); border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:2px;}
+.term-row{padding:11px 0; border-bottom:1px dashed var(--border);}
+.term-row:last-child{border-bottom:none;}
+.term-row .term{font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--text); margin-right:8px;}
+.term-row .def{font-size:13.5px; color:var(--text-muted);}
+.ref-empty{color:var(--text-faint); font-style:italic; font-size:13px; padding:10px 0;}
+
 .bar-group{margin-bottom:22px;}
 .bar-group h4{font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--copper); border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:10px;}
 .bar-item{display:flex; gap:10px; padding:10px 0; border-bottom:1px dashed var(--border); align-items:flex-start;}
@@ -228,6 +236,7 @@ footer{text-align:center; color:var(--text-faint); font-size:12px; margin-top:30
     <button data-tab="mentors">06 · Mentors &amp; Network</button>
     <button data-tab="recipes">07 · Recipe Bank</button>
     <button data-tab="culture">08 · Culture &amp; History</button>
+    <button data-tab="reference">09 · Reference Index</button>
   </nav>
 
   <!-- ROADMAP -->
@@ -354,6 +363,25 @@ footer{text-align:center; color:var(--text-faint); font-size:12px; margin-top:30
       <button class="primary" onclick="addCultureEntry()">Add to Culture &amp; History</button>
     </div>
     <div id="cultureCustom"></div>
+  </section>
+
+  <!-- REFERENCE INDEX -->
+  <section class="panel" id="panel-reference">
+    <h2>Reference Index</h2>
+    <p class="panel-intro">A fast lookup, not a lesson — the working vocabulary for specing, standardizing, and running a program at execution level. Search to filter.</p>
+    <input type="text" id="refSearch" placeholder="Search terms… e.g. 'dilution' or 'clarif'" style="margin-bottom:18px;">
+    <div id="refGroups"></div>
+
+    <div class="card-form" style="margin-top:24px;">
+      <h3>Add your own term</h3>
+      <div class="grid2">
+        <div class="field"><label>Term</label><input type="text" id="rfTerm" placeholder="e.g. Sous-vide infusion"></div>
+        <div class="field"><label>Category</label><input type="text" id="rfCat" placeholder="e.g. Texture &amp; Clarification"></div>
+      </div>
+      <div class="field"><label>Definition</label><textarea id="rfDef"></textarea></div>
+      <button class="primary" onclick="addReferenceTerm()">Add term</button>
+    </div>
+    <div id="refCustomList"></div>
   </section>
 
   <footer>saved privately to this browser via localStorage · nothing here is shared or uploaded</footer>
@@ -659,6 +687,72 @@ async function renderAtlasCustom(){
     list.map(a=>`<div class="atlas-card"><h4>${a.t}</h4><p>${a.d}</p>${a.ex?`<div class="ex">${a.ex}</div>`:''}<div class="entry-actions"><button class="ghost" onclick="deleteAtlas('${a.id}')">Remove</button></div></div>`).join('') + '</div>';
 }
 
+/* ---------------- REFERENCE INDEX ---------------- */
+const REFERENCE_TERMS = [
+  {cat:'Balance & Ratios', term:'Spec', def:'The exact written formula for a drink — every spirit, modifier, sweetener, acid, and aromatic in fixed amounts, so it pours the same whoever\'s behind the bar.'},
+  {cat:'Balance & Ratios', term:'Backbone ratio', def:'The base:modifier:sweetener/acid framework used to standardize builds across a menu — e.g. 2:0.75:0.75 — so new drinks can be designed against a known structure instead of from scratch.'},
+  {cat:'Balance & Ratios', term:'Brix', def:'A measurement of sugar concentration, used to standardize syrups and keep sweetness consistent batch to batch.'},
+  {cat:'Balance & Ratios', term:'pH', def:'A measurement of acidity, used to standardize acid solutions and citrus substitutes against the fruit they\'re replacing.'},
+  {cat:'Acid & Texture', term:'Acid solution', def:'A shelf-stable citric / malic / tartaric acid blend mixed to match a target pH — removes seasonal and shelf-life variance from citrus-driven specs.'},
+  {cat:'Acid & Texture', term:'Fat-wash', def:'Infusing a spirit with a fat (butter, bacon, coconut oil) then freezing it out — leaves flavor and body behind without the fat itself, useful for bridging to rich dishes.'},
+  {cat:'Acid & Texture', term:'Clarification', def:'Removing solids and haze from a drink (milk punch, agar, centrifuge) while keeping the flavor — a cleaner, lighter-bodied result from the same ingredients.'},
+  {cat:'Acid & Texture', term:'Verjus', def:'Unripe grape juice — high acid, low sugar. A lower-sweetness alternative to citrus when you want lift without adding sugar load.'},
+  {cat:'Dilution & Ice', term:'Dilution', def:'Water incorporated into a drink via shaking or stirring — the actual difference between "strong" and "finished."'},
+  {cat:'Dilution & Ice', term:'Target dilution', def:'The intended percentage of water by volume for a given style — stirred spirit-forward drinks commonly land around 20–25%, shaken citrus drinks higher.'},
+  {cat:'Dilution & Ice', term:'Ice geometry', def:'Cube, sphere, or block size and surface area — the real lever on dilution rate, independent of how long you stir.'},
+  {cat:'Aromatics & Seasoning', term:'Tincture', def:'A high-proof spirit infused with a single aromatic, dosed in drops rather than measured like a modifier.'},
+  {cat:'Aromatics & Seasoning', term:'Bitters', def:'A concentrated aromatic bittering agent that functions as seasoning, not flavor — adjusts a drink the way salt adjusts a dish.'},
+  {cat:'Aromatics & Seasoning', term:'Bridge ingredient', def:'A flavor or aromatic compound shared between a drink and a specific dish, used deliberately to connect the two before the first bite or sip.'},
+  {cat:'Service & Program', term:'Batching', def:'Pre-mixing multiple servings of shelf-stable ingredients ahead of service — speeds up ticket times without sacrificing consistency.'},
+  {cat:'Service & Program', term:'Menu architecture', def:'The structural logic organizing a drink list — by spirit, by flavor profile, or by course — so the list itself teaches the guest how to move through it.'},
+  {cat:'Service & Program', term:'Course pairing sequence', def:'Matching drink intensity and timing to the kitchen\'s plate sequence — the difference between a personal recipe and an actual running program.'}
+];
+function renderReferenceCore(filter=''){
+  const f = filter.trim().toLowerCase();
+  const cats = [...new Set(REFERENCE_TERMS.map(t=>t.cat))];
+  const wrap = document.getElementById('refGroups');
+  let html = '';
+  cats.forEach(cat=>{
+    const items = REFERENCE_TERMS.filter(t=>t.cat===cat && (!f || (t.term+' '+t.def).toLowerCase().includes(f)));
+    if(!items.length) return;
+    html += `<div class="ref-group"><h4>${cat}</h4>` +
+      items.map(t=>`<div class="term-row"><span class="term">${t.term}</span><span class="def">${t.def}</span></div>`).join('') +
+      `</div>`;
+  });
+  wrap.innerHTML = html || '<div class="ref-empty">No terms match that search.</div>';
+}
+document.getElementById('refSearch').addEventListener('input', e=>{
+  renderReferenceCore(e.target.value);
+  renderReferenceCustom(e.target.value);
+});
+async function addReferenceTerm(){
+  const term = document.getElementById('rfTerm').value.trim();
+  const def = document.getElementById('rfDef').value.trim();
+  if(!term || !def){ alert('Add both a term and a definition.'); return; }
+  const entry = { id:uid(), term, cat:document.getElementById('rfCat').value.trim()||'Your Terms', def };
+  const list = await getKey('reference-custom', []);
+  list.unshift(entry);
+  await setKey('reference-custom', list);
+  ['rfTerm','rfCat','rfDef'].forEach(id=>document.getElementById(id).value='');
+  renderReferenceCustom();
+}
+async function deleteReferenceTerm(id){
+  let list = await getKey('reference-custom', []);
+  list = list.filter(e=>e.id!==id);
+  await setKey('reference-custom', list);
+  renderReferenceCustom();
+}
+async function renderReferenceCustom(filter=''){
+  const f = filter.trim().toLowerCase();
+  const list = await getKey('reference-custom', []);
+  const wrap = document.getElementById('refCustomList');
+  const items = list.filter(t=>!f || (t.term+' '+t.def).toLowerCase().includes(f));
+  if(!items.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = '<h3 style="font-family:var(--font-display); font-weight:600; color:var(--amber); margin:22px 0 4px;">Your terms</h3>' +
+    items.map(t=>`<div class="term-row"><span class="term">${t.term}</span><span class="badge" style="margin:0 8px;">${t.cat}</span><span class="def">${t.def}</span>
+      <div class="entry-actions"><button class="ghost" onclick="deleteReferenceTerm('${t.id}')">Remove</button></div></div>`).join('');
+}
+
 /* ---------------- CULTURE & HISTORY ---------------- */
 const CULTURE_REGIONS = [
   {r:'Cuba', t:'The Daiquiri &amp; Mojito Lineage', d:'The daiquiri is said to trace to American mining engineers near Santiago de Cuba around 1900, who softened raw local rum with the island\'s limes and sugar — later refined into an entire program at Havana\'s La Floridita. The mojito\'s mint-and-rum tradition runs even older, tangled up with El Draque, a rough 16th-century sailor\'s mix of aguardiente, lime, and mint.', ex:'Both drinks share Cuban criollo cooking\'s own citrus backbone — mojo-marinated pork, ropa vieja, black beans and rice.'},
@@ -844,6 +938,8 @@ async function updateHeaderStats(){
   renderAtlasCustom();
   renderCultureCore();
   renderCultureCustom();
+  renderReferenceCore();
+  renderReferenceCustom();
   renderBars();
   renderMentors();
   renderRecipes();
